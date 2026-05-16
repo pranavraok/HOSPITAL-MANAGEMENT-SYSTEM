@@ -7,48 +7,198 @@ import { useState } from "react";
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = useState("ADMIN");
+  const [loading, setLoading] = useState(false);
 
   function handleLogin(event: FormEvent) {
     event.preventDefault();
+    setLoading(true);
     document.cookie = `hms-role=${role}; path=/; max-age=${60 * 60 * 8}`;
-    router.push("/");
+    setTimeout(() => router.push("/"), 600);
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.14),transparent_24%),linear-gradient(180deg,#09111f_0%,#0f172a_55%,#eaf2fb_100%)]" />
-      <div className="w-full max-w-lg rounded-[2rem] border border-white/10 bg-white/92 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl sm:p-10">
-        <div className="inline-flex rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-700">
-          HMS Access
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a2e 100%)",
+        padding: "20px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Decorative blobs */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-120px",
+          left: "-120px",
+          width: 400,
+          height: 400,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(37,99,235,0.25), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-100px",
+          right: "-100px",
+          width: 360,
+          height: 360,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(8,145,178,0.2), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Card */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 440,
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: 24,
+          border: "1px solid rgba(255,255,255,0.12)",
+          padding: "40px 36px",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 16,
+              background: "linear-gradient(135deg, #2563eb, #0891b2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 26,
+              boxShadow: "0 6px 20px rgba(37,99,235,0.5)",
+              flexShrink: 0,
+            }}
+          >
+            🏥
+          </div>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#f8fafc", letterSpacing: "-0.02em" }}>
+              HMS
+            </div>
+            <div style={{ fontSize: 12, color: "#64748b" }}>Hospital Management System</div>
+          </div>
         </div>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-          Hospital Management Login
+
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>
+          Welcome back
         </h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          Choose a role to preview the dashboard with a clean, user-friendly admin shell.
+        <p style={{ fontSize: 13, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>
+          Select your role and sign in to access the dashboard.
         </p>
 
-        <form className="mt-8 space-y-5" onSubmit={handleLogin}>
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">Role</span>
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#94a3b8",
+                marginBottom: 7,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Sign in as
+            </label>
             <select
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.07)",
+                color: "#f1f5f9",
+                padding: "12px 16px",
+                fontSize: 15,
+                appearance: "none",
+                cursor: "pointer",
+              }}
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
-              <option value="ADMIN">Admin</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="RECEPTIONIST">Receptionist</option>
+              <option value="ADMIN" style={{ background: "#1e293b" }}>🔐 Admin</option>
+              <option value="DOCTOR" style={{ background: "#1e293b" }}>⚕ Doctor</option>
+              <option value="RECEPTIONIST" style={{ background: "#1e293b" }}>🖥 Receptionist</option>
             </select>
-          </label>
+          </div>
 
           <button
-            className="w-full rounded-2xl bg-slate-950 px-4 py-3.5 font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-800"
             type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              borderRadius: 12,
+              background: loading
+                ? "rgba(37,99,235,0.5)"
+                : "linear-gradient(135deg, #2563eb, #0891b2)",
+              padding: "14px",
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#fff",
+              border: "none",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 4px 16px rgba(37,99,235,0.45)",
+              transition: "all 0.15s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              marginTop: 4,
+            }}
           >
-            Sign In
+            {loading ? (
+              <>
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    border: "2px solid rgba(255,255,255,0.3)",
+                    borderTop: "2px solid #fff",
+                    borderRadius: "50%",
+                    animation: "spin 0.7s linear infinite",
+                  }}
+                />
+                Signing in...
+              </>
+            ) : (
+              "Sign In →"
+            )}
           </button>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </form>
+
+        <div
+          style={{
+            marginTop: 24,
+            padding: "12px 16px",
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 10,
+            border: "1px solid rgba(255,255,255,0.07)",
+            fontSize: 12,
+            color: "#475569",
+            textAlign: "center",
+          }}
+        >
+          Demo mode — select any role to explore
+        </div>
       </div>
     </div>
   );

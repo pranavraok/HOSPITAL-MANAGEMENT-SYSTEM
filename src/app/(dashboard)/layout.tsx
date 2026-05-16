@@ -3,11 +3,33 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-transparent">
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "#f1f5f9",
+      }}
+    >
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
+        }}
+      >
         <Header />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        <main
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "28px 32px",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

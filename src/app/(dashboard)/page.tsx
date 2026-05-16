@@ -18,203 +18,250 @@ type DashboardStats = {
   recentAppointments: Appointment[];
 };
 
+const statConfig = [
+  { key: "totalPatients", label: "Patients", icon: "👤", color: "#2563eb", bg: "#eff6ff" },
+  { key: "totalDoctors", label: "Doctors", icon: "⚕", color: "#059669", bg: "#f0fdf4" },
+  { key: "totalAppointments", label: "Appointments", icon: "📅", color: "#d97706", bg: "#fffbeb" },
+  { key: "totalRevenue", label: "Revenue", icon: "💳", color: "#7c3aed", bg: "#faf5ff", prefix: "₹" },
+  { key: "totalMedicines", label: "Medicines", icon: "💊", color: "#0891b2", bg: "#ecfeff" },
+  { key: "totalRooms", label: "Rooms", icon: "🏥", color: "#db2777", bg: "#fdf2f8" },
+  { key: "lowStockMedicines", label: "Low Stock", icon: "⚠️", color: "#dc2626", bg: "#fef2f2" },
+];
+
+const statusColors: Record<string, { bar: string; bg: string; text: string }> = {
+  PENDING: { bar: "#f59e0b", bg: "#fffbeb", text: "#92400e" },
+  CONFIRMED: { bar: "#2563eb", bg: "#eff6ff", text: "#1e40af" },
+  COMPLETED: { bar: "#059669", bg: "#f0fdf4", text: "#065f46" },
+  CANCELLED: { bar: "#dc2626", bg: "#fef2f2", text: "#991b1b" },
+};
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchStats() {
-    const res = await fetch("/api/dashboard");
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      setError(data.error || "Failed to load dashboard data");
-      setStats({
-        totalPatients: 0,
-        totalDoctors: 0,
-        totalAppointments: 0,
-        totalRevenue: 0,
-        totalMedicines: 0,
-        totalRooms: 0,
-        lowStockMedicines: 0,
-        appointmentStatusGroups: [],
-        recentPatients: [],
-        recentAppointments: [],
-      });
-      return;
-    }
-
-    setError(null);
-    setStats(data);
-  }
-
   useEffect(() => {
-    fetchStats();
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error) { setError(data.error); setStats({ totalPatients: 0, totalDoctors: 0, totalAppointments: 0, totalRevenue: 0, totalMedicines: 0, totalRooms: 0, lowStockMedicines: 0, appointmentStatusGroups: [], recentPatients: [], recentAppointments: [] }); }
+        else { setError(null); setStats(data); }
+      })
+      .catch(() => setStats({ totalPatients: 0, totalDoctors: 0, totalAppointments: 0, totalRevenue: 0, totalMedicines: 0, totalRooms: 0, lowStockMedicines: 0, appointmentStatusGroups: [], recentPatients: [], recentAppointments: [] }));
   }, []);
 
   if (!stats) {
-    return <div className="p-10">Loading...</div>;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  const cards = [
-    {
-      title: "Patients",
-      value: stats.totalPatients,
-    },
-    {
-      title: "Doctors",
-      value: stats.totalDoctors,
-    },
-    {
-      title: "Appointments",
-      value: stats.totalAppointments,
-    },
-    {
-      title: "Revenue",
-      value: `₹${Number(stats.totalRevenue).toFixed(2)}`,
-    },
-    {
-      title: "Medicines",
-      value: stats.totalMedicines,
-    },
-    {
-      title: "Rooms",
-      value: stats.totalRooms,
-    },
-    {
-      title: "Low Stock",
-      value: stats.lowStockMedicines,
-    },
-  ];
-
   return (
-    <div className="space-y-8">
-      {error ? (
-        <div className="rounded-3xl border border-amber-200 bg-amber-50/90 p-4 text-amber-900 shadow-sm">
-          Dashboard data is partially unavailable: {error}
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {error && (
+        <div style={{ borderRadius: 12, background: "#fffbeb", border: "1px solid #fde68a", padding: "12px 18px", color: "#92400e", fontSize: 13 }}>
+          ⚠️ {error}
         </div>
-      ) : null}
+      )}
 
       <PageHeader
         eyebrow="Overview"
         title="Hospital Dashboard"
-        description="A quick, readable snapshot of operations, patient flow, revenue, and active work."
+        description="Live snapshot of operations, patient flow, revenue, and active work."
       />
 
-      <div
-        style={{
-          display: "grid",
-          gap: 16,
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-        }}
-      >
-        {cards.map((card) => (
-          <div
-            key={card.title}
-            style={{
-              borderRadius: 24,
-              border: "1px solid #e6e9ee",
-              backgroundColor: "#ffffff",
-              padding: 20,
-              boxShadow: "0 1px 6px rgba(2,6,23,0.06)",
-            }}
-          >
-            <h2
+      {/* Stat Cards */}
+      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
+        {statConfig.map((cfg) => {
+          const raw = stats[cfg.key as keyof DashboardStats];
+          const value = cfg.prefix ? `${cfg.prefix}${Number(raw).toFixed(2)}` : String(raw);
+          return (
+            <div
+              key={cfg.key}
               style={{
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "#64748b",
+                borderRadius: 16,
+                background: "#fff",
+                padding: "20px",
+                boxShadow: "0 1px 6px rgba(15,23,42,0.07)",
+                border: "1px solid #f1f5f9",
+                transition: "box-shadow 0.15s",
               }}
             >
-              {card.title}
-            </h2>
-
-            <p style={{ marginTop: 12, fontSize: 28, fontWeight: 700, color: "#0f172a" }}>
-              {card.value}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Recent Patients">
-          {stats.recentPatients.map((patient) => (
-            <Item
-              key={patient.id}
-              title={`${patient.firstName} ${patient.lastName}`}
-              subtitle={patient.email}
-            />
-          ))}
-        </Panel>
-
-        <Panel title="Recent Appointments">
-          {stats.recentAppointments.map((appointment) => (
-            <Item
-              key={appointment.id}
-              title={`Appointment #${appointment.id}`}
-              subtitle={new Date(appointment.scheduledAt).toLocaleString()}
-            />
-          ))}
-        </Panel>
-      </div>
-
-      <Panel title="Appointment Status Analytics">
-        <div className="space-y-4">
-          {stats.appointmentStatusGroups.map((group) => {
-            const total = Math.max(stats.totalAppointments, 1);
-            const width = Math.max((group._count.status / total) * 100, 8);
-
-            return (
-              <div key={group.status} className="space-y-2">
-                <div className="flex items-center justify-between text-sm font-medium">
-                  <span>{group.status}</span>
-                  <span>{group._count.status}</span>
-                </div>
-                <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-slate-950"
-                    style={{ width: `${width}%` }}
-                  />
-                </div>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: cfg.bg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  marginBottom: 14,
+                }}
+              >
+                {cfg.icon}
               </div>
-            );
-          })}
-        </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+                {value}
+              </div>
+              <div style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                {cfg.label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Recent panels */}
+      <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+        <Panel title="Recent Patients" icon="👤">
+          {stats.recentPatients.length === 0 ? (
+            <EmptyRow text="No recent patients" />
+          ) : (
+            stats.recentPatients.map((p) => (
+              <Row key={p.id} title={`${p.firstName} ${p.lastName}`} subtitle={p.email} avatar={p.firstName?.[0]} />
+            ))
+          )}
+        </Panel>
+
+        <Panel title="Recent Appointments" icon="📅">
+          {stats.recentAppointments.length === 0 ? (
+            <EmptyRow text="No recent appointments" />
+          ) : (
+            stats.recentAppointments.map((a) => (
+              <Row key={a.id} title={`Appointment #${a.id}`} subtitle={new Date(a.scheduledAt).toLocaleString()} />
+            ))
+          )}
+        </Panel>
+      </div>
+
+      {/* Status Analytics */}
+      <Panel title="Appointment Status" icon="📊">
+        {stats.appointmentStatusGroups.length === 0 ? (
+          <EmptyRow text="No appointment data" />
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 4 }}>
+            {stats.appointmentStatusGroups.map((g) => {
+              const total = Math.max(stats.totalAppointments, 1);
+              const pct = Math.max((g._count.status / total) * 100, 6);
+              const c = statusColors[g.status] || { bar: "#2563eb", bg: "#eff6ff", text: "#1e40af" };
+              return (
+                <div key={g.status}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: c.bg,
+                        color: c.text,
+                        borderRadius: 99,
+                        padding: "3px 10px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {g.status}
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{g._count.status}</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 99, background: "#f1f5f9", overflow: "hidden" }}>
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${pct}%`,
+                        borderRadius: 99,
+                        background: c.bar,
+                        transition: "width 0.6s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Panel>
     </div>
   );
 }
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section
-      style={{
-        borderRadius: 24,
-        border: "1px solid #e6e9ee",
-        backgroundColor: "#ffffff",
-        padding: 20,
-        boxShadow: "0 1px 6px rgba(2,6,23,0.06)",
-      }}
-    >
-      <h2 style={{ fontSize: 18, fontWeight: 600, color: "#0f172a" }}>{title}</h2>
-      <div style={{ marginTop: 12, display: "block", gap: 12 }}>{children}</div>
-    </section>
-  );
-}
-
-function Item({ title, subtitle }: { title: string; subtitle: string }) {
+function Panel({ title, icon, children }: { title: string; icon?: string; children: ReactNode }) {
   return (
     <div
       style={{
-        borderRadius: 12,
-        backgroundColor: "#f8fafc",
-        padding: 12,
-        border: "1px solid #eef2f6",
+        borderRadius: 16,
+        background: "#fff",
+        padding: "20px 24px",
+        boxShadow: "0 1px 6px rgba(15,23,42,0.07)",
+        border: "1px solid #f1f5f9",
       }}
     >
-      <div style={{ fontWeight: 600, color: "#0f172a" }}>{title}</div>
-      <div style={{ marginTop: 6, fontSize: 13, color: "#64748b" }}>{subtitle}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        {icon && <span style={{ fontSize: 18 }}>{icon}</span>}
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Row({ title, subtitle, avatar }: { title: string; subtitle: string; avatar?: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "10px 12px",
+        borderRadius: 10,
+        background: "#f8fafc",
+        border: "1px solid #f1f5f9",
+        marginBottom: 8,
+      }}
+    >
+      {avatar && (
+        <div
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #2563eb, #0891b2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#fff",
+            flexShrink: 0,
+          }}
+        >
+          {avatar.toUpperCase()}
+        </div>
+      )}
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {title}
+        </div>
+        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {subtitle}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyRow({ text }: { text: string }) {
+  return (
+    <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+      {text}
     </div>
   );
 }
