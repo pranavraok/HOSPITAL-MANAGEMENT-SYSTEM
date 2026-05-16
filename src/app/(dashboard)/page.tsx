@@ -18,47 +18,35 @@ type DashboardStats = {
   recentAppointments: Appointment[];
 };
 
-// ─── Role-specific config ────────────────────────────────────────────────────
-const ROLE_META: Record<string, { title: string; description: string; eyebrow: string; color: string }> = {
-  ADMIN: {
-    eyebrow: "Overview",
-    title: "Hospital Dashboard",
-    description: "Full operational snapshot — patients, doctors, revenue, rooms and inventory.",
-    color: "#2563eb",
-  },
-  DOCTOR: {
-    eyebrow: "Clinical",
-    title: "Doctor Dashboard",
-    description: "Your scheduled appointments, recent patients and pending lab reports.",
-    color: "#16a34a",
-  },
-  RECEPTIONIST: {
-    eyebrow: "Front Office",
-    title: "Reception Dashboard",
-    description: "Manage patient check-ins, appointments and billing from one place.",
-    color: "#ca8a04",
-  },
+const ROLE_META: Record<string, { title: string; description: string; eyebrow: string; color: string; icon: string }> = {
+  ADMIN:        { eyebrow: "Overview",    title: "Hospital Dashboard",  description: "Full operational snapshot — patients, doctors, revenue, rooms and inventory.", color: "#2563eb", icon: "🏥" },
+  DOCTOR:       { eyebrow: "Clinical",    title: "Doctor Dashboard",    description: "Your scheduled appointments, recent patients and pending lab reports.",          color: "#16a34a", icon: "⚕" },
+  RECEPTIONIST: { eyebrow: "Front Office",title: "Reception Dashboard", description: "Manage patient check-ins, appointments and billing from one place.",            color: "#ca8a04", icon: "🖥" },
+  PATIENT:      { eyebrow: "My Health",   title: "Patient Portal",      description: "View your appointments, bills and lab reports all in one place.",               color: "#0891b2", icon: "🧑‍⚕️" },
 };
 
 const STATS_BY_ROLE: Record<string, { key: string; label: string; icon: string; color: string; bg: string; prefix?: string }[]> = {
   ADMIN: [
-    { key: "totalPatients",    label: "Patients",      icon: "👤", color: "#2563eb", bg: "#eff6ff" },
-    { key: "totalDoctors",     label: "Doctors",       icon: "⚕",  color: "#059669", bg: "#f0fdf4" },
-    { key: "totalAppointments",label: "Appointments",  icon: "📅", color: "#d97706", bg: "#fffbeb" },
-    { key: "totalRevenue",     label: "Revenue",       icon: "💳", color: "#7c3aed", bg: "#faf5ff", prefix: "₹" },
-    { key: "totalMedicines",   label: "Medicines",     icon: "💊", color: "#0891b2", bg: "#ecfeff" },
-    { key: "totalRooms",       label: "Rooms",         icon: "🏥", color: "#db2777", bg: "#fdf2f8" },
-    { key: "lowStockMedicines",label: "Low Stock",     icon: "⚠️", color: "#dc2626", bg: "#fef2f2" },
+    { key: "totalPatients",    label: "Patients",     icon: "👤", color: "#2563eb", bg: "#eff6ff" },
+    { key: "totalDoctors",     label: "Doctors",      icon: "⚕",  color: "#059669", bg: "#f0fdf4" },
+    { key: "totalAppointments",label: "Appointments", icon: "📅", color: "#d97706", bg: "#fffbeb" },
+    { key: "totalRevenue",     label: "Revenue",      icon: "💳", color: "#7c3aed", bg: "#faf5ff", prefix: "₹" },
+    { key: "totalMedicines",   label: "Medicines",    icon: "💊", color: "#0891b2", bg: "#ecfeff" },
+    { key: "totalRooms",       label: "Rooms",        icon: "🏥", color: "#db2777", bg: "#fdf2f8" },
+    { key: "lowStockMedicines",label: "Low Stock",    icon: "⚠️", color: "#dc2626", bg: "#fef2f2" },
   ],
   DOCTOR: [
-    { key: "totalPatients",    label: "Total Patients",    icon: "👤", color: "#2563eb", bg: "#eff6ff" },
-    { key: "totalAppointments",label: "My Appointments",   icon: "📅", color: "#16a34a", bg: "#f0fdf4" },
+    { key: "totalPatients",    label: "Total Patients",  icon: "👤", color: "#2563eb", bg: "#eff6ff" },
+    { key: "totalAppointments",label: "My Appointments", icon: "📅", color: "#16a34a", bg: "#f0fdf4" },
   ],
   RECEPTIONIST: [
     { key: "totalPatients",    label: "Patients",      icon: "👤", color: "#2563eb", bg: "#eff6ff" },
     { key: "totalAppointments",label: "Appointments",  icon: "📅", color: "#d97706", bg: "#fffbeb" },
     { key: "totalRevenue",     label: "Revenue Today", icon: "💳", color: "#7c3aed", bg: "#faf5ff", prefix: "₹" },
     { key: "totalRooms",       label: "Rooms",         icon: "🏥", color: "#db2777", bg: "#fdf2f8" },
+  ],
+  PATIENT: [
+    { key: "totalAppointments",label: "My Appointments", icon: "📅", color: "#0891b2", bg: "#ecfeff" },
   ],
 };
 
@@ -94,14 +82,14 @@ export default function DashboardPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
         <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
-          {[...Array(6)].map((_, i) => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 16 }} />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 16 }} />)}
         </div>
       </div>
     );
   }
 
-  const meta      = ROLE_META[role]      ?? ROLE_META.ADMIN;
-  const statCfg   = STATS_BY_ROLE[role] ?? STATS_BY_ROLE.ADMIN;
+  const meta    = ROLE_META[role]      ?? ROLE_META.ADMIN;
+  const statCfg = STATS_BY_ROLE[role] ?? STATS_BY_ROLE.ADMIN;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -110,11 +98,9 @@ export default function DashboardPage() {
         <div style={{ borderRadius: 12, background: "#fffbeb", border: "1px solid #fde68a", padding: "12px 18px", color: "#92400e", fontSize: 13 }}>⚠️ {error}</div>
       )}
 
-      {/* Role-specific welcome banner */}
+      {/* Welcome banner */}
       <div style={{ borderRadius: 16, background: `linear-gradient(135deg, ${meta.color}18, ${meta.color}08)`, border: `1px solid ${meta.color}30`, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${meta.color}, #0891b2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 14px ${meta.color}44`, flexShrink: 0 }}>
-          {role === "DOCTOR" ? "⚕" : role === "RECEPTIONIST" ? "🖥" : "🏥"}
-        </div>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${meta.color}, #0891b2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 14px ${meta.color}44`, flexShrink: 0 }}>{meta.icon}</div>
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: meta.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>{meta.eyebrow}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>{meta.title}</div>
@@ -122,7 +108,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* Stat cards */}
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
         {statCfg.map((cfg) => {
           const raw = stats[cfg.key as keyof DashboardStats];
@@ -137,26 +123,46 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Recent panels — always show for all roles */}
-      <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
-        <Panel title="Recent Patients" icon="👤">
-          {stats.recentPatients.length === 0 ? <EmptyRow text="No recent patients" /> : (
-            stats.recentPatients.map((p) => (
-              <Row key={p.id} title={`${p.firstName} ${p.lastName}`} subtitle={p.email} avatar={p.firstName?.[0]} />
-            ))
-          )}
-        </Panel>
+      {/* Patient portal cards */}
+      {role === "PATIENT" && (
+        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          {[
+            { label: "My Appointments", href: "/appointments", icon: "📅", color: "#0891b2", desc: "View & track your visits" },
+            { label: "My Bills",        href: "/billing",      icon: "💳", color: "#7c3aed", desc: "Check payment status" },
+            { label: "Lab Reports",     href: "/lab",          icon: "🔬", color: "#059669", desc: "See test results" },
+          ].map((card) => (
+            <a key={card.href} href={card.href} style={{ display: "flex", flexDirection: "column", gap: 10, borderRadius: 16, background: "#fff", border: `1px solid ${card.color}22`, padding: "20px", textDecoration: "none", boxShadow: "0 1px 6px rgba(15,23,42,0.07)", transition: "box-shadow 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 4px 20px ${card.color}33`)}
+              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 1px 6px rgba(15,23,42,0.07)")}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: `${card.color}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{card.icon}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{card.label}</div>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>{card.desc}</div>
+            </a>
+          ))}
+        </div>
+      )}
 
-        <Panel title="Recent Appointments" icon="📅">
-          {stats.recentAppointments.length === 0 ? <EmptyRow text="No recent appointments" /> : (
-            stats.recentAppointments.map((a) => (
-              <Row key={a.id} title={`Appointment #${a.id}`} subtitle={new Date(a.scheduledAt).toLocaleString()} />
-            ))
-          )}
-        </Panel>
-      </div>
+      {/* Recent panels — non-patient roles */}
+      {role !== "PATIENT" && (
+        <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+          <Panel title="Recent Patients" icon="👤">
+            {stats.recentPatients.length === 0 ? <EmptyRow text="No recent patients" /> : (
+              stats.recentPatients.map((p) => (
+                <Row key={p.id} title={`${p.firstName} ${p.lastName}`} subtitle={p.email} avatar={p.firstName?.[0]} />
+              ))
+            )}
+          </Panel>
+          <Panel title="Recent Appointments" icon="📅">
+            {stats.recentAppointments.length === 0 ? <EmptyRow text="No recent appointments" /> : (
+              stats.recentAppointments.map((a) => (
+                <Row key={a.id} title={`Appointment #${a.id}`} subtitle={new Date(a.scheduledAt).toLocaleString()} />
+              ))
+            )}
+          </Panel>
+        </div>
+      )}
 
-      {/* Appointment analytics — Admin + Receptionist only */}
+      {/* Appointment analytics — Admin + Receptionist */}
       {(role === "ADMIN" || role === "RECEPTIONIST") && (
         <Panel title="Appointment Status Breakdown" icon="📊">
           {stats.appointmentStatusGroups.length === 0 ? <EmptyRow text="No appointment data" /> : (
@@ -182,7 +188,7 @@ export default function DashboardPage() {
         </Panel>
       )}
 
-      {/* Doctor-only quick action panel */}
+      {/* Doctor quick actions */}
       {role === "DOCTOR" && (
         <Panel title="Quick Actions" icon="⚡">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 4 }}>
@@ -192,7 +198,7 @@ export default function DashboardPage() {
               { label: "Patient Records",   href: "/patients",     icon: "👤", color: "#2563eb" },
             ].map((a) => (
               <a key={a.href} href={a.href} style={{ display: "flex", alignItems: "center", gap: 10, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0", padding: "14px 16px", textDecoration: "none", transition: "background 0.15s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0fdf4")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "#f8fafc")}>
                 <span style={{ fontSize: 22 }}>{a.icon}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{a.label}</span>
@@ -207,10 +213,10 @@ export default function DashboardPage() {
         <Panel title="Quick Actions" icon="⚡">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 4 }}>
             {[
-              { label: "New Appointment", href: "/appointments/new", icon: "📅", color: "#d97706" },
-              { label: "Add Patient",     href: "/patients/new",     icon: "👤", color: "#2563eb" },
-              { label: "Generate Bill",   href: "/billing",          icon: "💳", color: "#7c3aed" },
-              { label: "Manage Rooms",    href: "/rooms",            icon: "🏥", color: "#db2777" },
+              { label: "New Appointment", href: "/appointments", icon: "📅", color: "#d97706" },
+              { label: "Add Patient",     href: "/patients",     icon: "👤", color: "#2563eb" },
+              { label: "Generate Bill",   href: "/billing",      icon: "💳", color: "#7c3aed" },
+              { label: "Manage Rooms",    href: "/rooms",        icon: "🏥", color: "#db2777" },
             ].map((a) => (
               <a key={a.href} href={a.href} style={{ display: "flex", alignItems: "center", gap: 10, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0", padding: "14px 16px", textDecoration: "none", transition: "background 0.15s" }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#fffbeb")}

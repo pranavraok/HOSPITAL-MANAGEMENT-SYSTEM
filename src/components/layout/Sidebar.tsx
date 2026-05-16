@@ -28,12 +28,19 @@ const NAV_BY_ROLE: Record<string, { href: string; label: string; icon: string }[
     { href: "/billing",     label: "Billing",      icon: "💳" },
     { href: "/rooms",       label: "Rooms",        icon: "🏥" },
   ],
+  PATIENT: [
+    { href: "/",            label: "My Overview",  icon: "⊞" },
+    { href: "/appointments",label: "My Appointments", icon: "📅" },
+    { href: "/billing",     label: "My Bills",     icon: "💳" },
+    { href: "/lab",         label: "My Lab Reports",icon: "🔬" },
+  ],
 };
 
 const ROLE_LABELS: Record<string, { label: string; subtitle: string; color: string }> = {
-  ADMIN:        { label: "Admin Panel",       subtitle: "Full access",         color: "#2563eb" },
-  DOCTOR:       { label: "Doctor Portal",     subtitle: "Clinical access",     color: "#16a34a" },
-  RECEPTIONIST: { label: "Reception Desk",    subtitle: "Front-office access", color: "#ca8a04" },
+  ADMIN:        { label: "Admin Panel",       subtitle: "Full access",          color: "#2563eb" },
+  DOCTOR:       { label: "Doctor Portal",     subtitle: "Clinical access",      color: "#16a34a" },
+  RECEPTIONIST: { label: "Reception Desk",    subtitle: "Front-office access",  color: "#ca8a04" },
+  PATIENT:      { label: "Patient Portal",    subtitle: "Your health records",  color: "#0891b2" },
 };
 
 export function Sidebar() {
@@ -60,7 +67,6 @@ export function Sidebar() {
             <div style={{ fontSize: 11, color: "#64748b", marginTop: 1 }}>Hospital Management</div>
           </div>
         </div>
-
         {/* Role pill */}
         <div style={{ marginTop: 14, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{meta.label}</div>
@@ -83,7 +89,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div style={{ padding: "14px 20px", borderTop: "1px solid rgba(255,255,255,0.07)", fontSize: 11, color: "#475569" }}>
         HMS v1.0 &nbsp;·&nbsp; All rights reserved
       </div>
