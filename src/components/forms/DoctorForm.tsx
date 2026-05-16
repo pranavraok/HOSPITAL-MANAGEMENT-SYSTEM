@@ -53,7 +53,6 @@ export function DoctorForm({ initial }: Props) {
     e.preventDefault();
     setError(null);
 
-    // Client-side validation
     if (!form.firstName.trim() || !form.lastName.trim()) {
       setError("First name and last name are required."); return;
     }
@@ -105,8 +104,9 @@ export function DoctorForm({ initial }: Props) {
     }
   }
 
-  const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm({ ...form, [field]: e.target.value });
+  const f = (field: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm({ ...form, [field]: e.target.value });
 
   return (
     <form
@@ -119,7 +119,6 @@ export function DoctorForm({ initial }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* Form header */}
       <div style={{ padding: "18px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 20 }}>⚕️</span>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>
@@ -129,14 +128,12 @@ export function DoctorForm({ initial }: Props) {
 
       <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 18 }}>
 
-        {/* Error */}
         {error && (
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 16px", color: "#dc2626", fontSize: 14, display: "flex", gap: 8 }}>
             <span>⚠️</span><span>{error}</span>
           </div>
         )}
 
-        {/* Name row */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="First Name *">
             <input style={inputSt} value={form.firstName} onChange={f("firstName")} placeholder="e.g. Rajesh" required />
@@ -146,7 +143,6 @@ export function DoctorForm({ initial }: Props) {
           </Field>
         </div>
 
-        {/* Email + Phone */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="Email *">
             <input style={inputSt} type="email" value={form.email} onChange={f("email")} placeholder="doctor@hospital.com" required />
@@ -156,7 +152,6 @@ export function DoctorForm({ initial }: Props) {
           </Field>
         </div>
 
-        {/* Specialty */}
         <Field label="Specialty *">
           <select style={inputSt} value={form.specialty} onChange={f("specialty")} required>
             <option value="">— Select specialty —</option>
@@ -164,15 +159,13 @@ export function DoctorForm({ initial }: Props) {
           </select>
         </Field>
 
-        {/* License Number */}
         <Field label="License Number *">
           <input style={inputSt} value={form.licenseNumber} onChange={f("licenseNumber")} placeholder="e.g. MCI-2024-001234" required />
         </Field>
 
-        {/* Department ID */}
         <Field
           label="Department ID *"
-          hint="Enter the numeric ID of an existing Department. E.g. if you created \"Cardiology\" and it has ID 1, enter 1."
+          hint="Enter the numeric ID of an existing Department. Example: if Cardiology was created first, enter 1."
         >
           <input
             style={inputSt}
@@ -185,7 +178,6 @@ export function DoctorForm({ initial }: Props) {
           />
         </Field>
 
-        {/* Tip box */}
         <div
           style={{
             background: "#eff6ff",
@@ -197,11 +189,10 @@ export function DoctorForm({ initial }: Props) {
             lineHeight: 1.6,
           }}
         >
-          <strong>💡 Tip:</strong> You must create a <strong>Department</strong> first (via MySQL or the Departments page) before adding a doctor.
-          Run <code style={{ background: "#dbeafe", borderRadius: 4, padding: "1px 6px" }}>INSERT INTO Department (name) VALUES ('Cardiology');</code> then use that ID here.
+          <strong>💡 Tip:</strong> You must create a Department in MySQL first before adding a doctor.
+          Run: <code style={{ background: "#dbeafe", borderRadius: 4, padding: "1px 6px" }}>INSERT INTO Department (name, description, createdAt, updatedAt) VALUES ('General Medicine', '', NOW(), NOW());</code> then use that row ID here.
         </div>
 
-        {/* Submit */}
         <div>
           <button
             type="submit"
