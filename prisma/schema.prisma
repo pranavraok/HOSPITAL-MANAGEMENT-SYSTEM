@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BillingStatus {
+  PENDING
+  PAID
+  VOID
+  REFUNDED
+}
+
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  doctors     Doctor[]
+  rooms       Room[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Doctor {
+  id             Int             @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  email          String          @unique
+  phone          String?
+  specialty      String
+  licenseNumber  String          @unique
+  departmentId   Int
+  department     Department      @relation(fields: [departmentId], references: [id])
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+  prescriptions  Prescription[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Patient {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String
+  gender    Gender
+  address   String?
+  createdAt DateTime @default(now())
+
+  appointments   Appointment[]
+  billings       Billing[]
+  medicalRecords MedicalRecord[]
+  labReports     LabReport[]
+  rooms          Room[]
+  prescriptions  Prescription[]
+}
+
+model Appointment {
+  id          Int               @id @default(autoincrement())
+  patientId   Int
+  doctorId    Int
+  scheduledAt DateTime
+  status      AppointmentStatus @default(SCHEDULED)
+  notes       String?
+  patient     Patient           @relation(fields: [patientId], references: [id])
+  doctor      Doctor            @relation(fields: [doctorId], references: [id])
+  billings    Billing[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Billing {
+  id            Int           @id @default(autoincrement())
+  patientId     Int
+  appointmentId Int?
+  consultationFee Decimal?     @db.Decimal(10, 2)
+  medicineCharges Decimal?     @db.Decimal(10, 2)
+  labCharges    Decimal?       @db.Decimal(10, 2)
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD")
+  status        BillingStatus @default(PENDING)
+  issuedAt      DateTime      @default(now())
+  paidAt        DateTime?
+  patient       Patient       @relation(fields: [patientId], references: [id])
+  appointment   Appointment?  @relation(fields: [appointmentId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model MedicalRecord {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  doctorId   Int
+  diagnosis  String
+  treatment  String?
+  notes      String?
+  recordDate DateTime @default(now())
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  doctor     Doctor   @relation(fields: [doctorId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Room {
+  id           Int         @id @default(autoincrement())
+  roomNumber   String      @unique
+  roomType     String
+  capacity     Int         @default(1)
+  isOccupied   Boolean     @default(false)
+  departmentId Int?
+  patientId    Int?        @unique
+  department   Department? @relation(fields: [departmentId], references: [id])
+  patient      Patient?    @relation(fields: [patientId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Prescription {
+  id             Int      @id @default(autoincrement())
+  patientId      Int
+  doctorId       Int
+  medicationName String
+  dosage         String
+  instructions   String?
+  prescribedAt   DateTime @default(now())
+  patient        Patient  @relation(fields: [patientId], references: [id])
+  doctor         Doctor   @relation(fields: [doctorId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Medicine {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique
+  stockQuantity   Int      @default(0)
+  price          Decimal  @db.Decimal(10, 2)
+  manufacturer   String
+  expiryDate     DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model LabReport {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  testName   String
+  result     String
+  status     String   @default("PENDING")
+  testDate   DateTime @default(now())
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  patient    Patient  @relation(fields: [patientId], references: [id])
+}
