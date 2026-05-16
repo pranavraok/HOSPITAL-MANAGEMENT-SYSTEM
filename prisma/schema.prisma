@@ -35,6 +35,8 @@ model Department {
   rooms       Room[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("department")
 }
 
 model Doctor {
@@ -52,6 +54,8 @@ model Doctor {
   prescriptions  Prescription[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  @@map("doctor")
 }
 
 model Patient {
@@ -70,6 +74,8 @@ model Patient {
   labReports     LabReport[]
   rooms          Room[]
   prescriptions  Prescription[]
+
+  @@map("patient")
 }
 
 model Appointment {
@@ -84,24 +90,28 @@ model Appointment {
   billings    Billing[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+
+  @@map("appointment")
 }
 
 model Billing {
-  id            Int           @id @default(autoincrement())
-  patientId     Int
-  appointmentId Int?
-  consultationFee Decimal?     @db.Decimal(10, 2)
-  medicineCharges Decimal?     @db.Decimal(10, 2)
-  labCharges    Decimal?       @db.Decimal(10, 2)
-  amount        Decimal       @db.Decimal(10, 2)
-  currency      String        @default("USD")
-  status        BillingStatus @default(PENDING)
-  issuedAt      DateTime      @default(now())
-  paidAt        DateTime?
-  patient       Patient       @relation(fields: [patientId], references: [id])
-  appointment   Appointment?  @relation(fields: [appointmentId], references: [id])
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  patientId       Int
+  appointmentId   Int?
+  consultationFee Decimal?      @db.Decimal(10, 2)
+  medicineCharges Decimal?      @db.Decimal(10, 2)
+  labCharges      Decimal?      @db.Decimal(10, 2)
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          BillingStatus @default(PENDING)
+  issuedAt        DateTime      @default(now())
+  paidAt          DateTime?
+  patient         Patient       @relation(fields: [patientId], references: [id])
+  appointment     Appointment?  @relation(fields: [appointmentId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("billing")
 }
 
 model MedicalRecord {
@@ -116,6 +126,8 @@ model MedicalRecord {
   doctor     Doctor   @relation(fields: [doctorId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@map("medicalrecord")
 }
 
 model Room {
@@ -130,6 +142,8 @@ model Room {
   patient      Patient?    @relation(fields: [patientId], references: [id])
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  @@map("room")
 }
 
 model Prescription {
@@ -144,28 +158,34 @@ model Prescription {
   doctor         Doctor   @relation(fields: [doctorId], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@map("prescription")
 }
 
 model Medicine {
-  id             Int      @id @default(autoincrement())
-  name           String   @unique
-  stockQuantity   Int      @default(0)
-  price          Decimal  @db.Decimal(10, 2)
-  manufacturer   String
-  expiryDate     DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  stockQuantity Int      @default(0)
+  price         Decimal  @db.Decimal(10, 2)
+  manufacturer  String
+  expiryDate    DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("medicine")
 }
 
 model LabReport {
-  id         Int      @id @default(autoincrement())
-  patientId  Int
-  testName   String
-  result     String
-  status     String   @default("PENDING")
-  testDate   DateTime @default(now())
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  patient    Patient  @relation(fields: [patientId], references: [id])
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  testName  String
+  result    String
+  status    String   @default("PENDING")
+  testDate  DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  patient   Patient  @relation(fields: [patientId], references: [id])
+
+  @@map("labreport")
 }
