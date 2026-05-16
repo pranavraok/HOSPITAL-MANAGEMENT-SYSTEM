@@ -16,69 +16,86 @@ type Props = {
   };
 };
 
+const SPECIALTIES = [
+  "General Medicine",
+  "Cardiology",
+  "Neurology",
+  "Orthopedics",
+  "Pediatrics",
+  "Gynecology",
+  "Dermatology",
+  "Ophthalmology",
+  "ENT",
+  "Radiology",
+  "Pathology",
+  "Anesthesiology",
+  "Oncology",
+  "Psychiatry",
+  "Urology",
+  "Other",
+];
+
 export function DoctorForm({ initial }: Props) {
   const router = useRouter();
   const [form, setForm] = useState({
-    firstName: initial?.firstName ?? "",
-    lastName: initial?.lastName ?? "",
-    email: initial?.email ?? "",
-    phone: initial?.phone ?? "",
-    specialty: initial?.specialty ?? "",
+    firstName:     initial?.firstName     ?? "",
+    lastName:      initial?.lastName      ?? "",
+    email:         initial?.email         ?? "",
+    phone:         initial?.phone         ?? "",
+    specialty:     initial?.specialty     ?? "",
     licenseNumber: initial?.licenseNumber ?? "",
-    departmentId: initial?.departmentId ? String(initial.departmentId) : "",
+    departmentId:  initial?.departmentId  ? String(initial.departmentId) : "",
   });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!form.firstName || !form.lastName || !form.email || !form.licenseNumber) {
-      setError("Please fill required fields");
-      return;
+    // Client-side validation
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      setError("First name and last name are required."); return;
+    }
+    if (!form.email.trim()) {
+      setError("Email is required."); return;
+    }
+    if (!form.specialty.trim()) {
+      setError("Specialty is required."); return;
+    }
+    if (!form.licenseNumber.trim()) {
+      setError("License number is required."); return;
+    }
+    if (!form.departmentId || isNaN(Number(form.departmentId))) {
+      setError("Department ID is required. Enter the numeric ID of an existing Department (e.g. 1)."); return;
     }
 
     setLoading(true);
     try {
-      const payload: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        phone: string;
-        specialty: string;
-        licenseNumber: string;
-        departmentId?: number;
-      } = {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        phone: form.phone,
-        specialty: form.specialty,
-        licenseNumber: form.licenseNumber,
-        departmentId: form.departmentId ? Number(form.departmentId) : undefined,
+      const payload = {
+        firstName:     form.firstName.trim(),
+        lastName:      form.lastName.trim(),
+        email:         form.email.trim(),
+        phone:         form.phone.trim(),
+        specialty:     form.specialty.trim(),
+        licenseNumber: form.licenseNumber.trim(),
+        departmentId:  Number(form.departmentId),
       };
 
-      let res;
-      if (initial?.id) {
-        res = await fetch(`/api/doctors/${initial.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        res = await fetch(`/api/doctors`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      }
+      const res = initial?.id
+        ? await fetch(`/api/doctors/${initial.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch("/api/doctors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || "Failed to save doctor");
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Failed to save doctor");
 
       router.push("/doctors");
     } catch (err) {
@@ -88,96 +105,149 @@ export function DoctorForm({ initial }: Props) {
     }
   }
 
+  const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm({ ...form, [field]: e.target.value });
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-sm backdrop-blur"
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        border: "1px solid #f1f5f9",
+        boxShadow: "0 1px 6px rgba(15,23,42,0.07)",
+        overflow: "hidden",
+      }}
     >
-      {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700">
-          {error}
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="block space-y-2">
-          <span className="text-sm font-medium text-slate-700">First name</span>
-          <input
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-            value={form.firstName}
-            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-            required
-          />
-        </label>
-
-        <label className="block space-y-2">
-          <span className="text-sm font-medium text-slate-700">Last name</span>
-          <input
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-            value={form.lastName}
-            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-            required
-          />
-        </label>
+      {/* Form header */}
+      <div style={{ padding: "18px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 20 }}>⚕️</span>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>
+          {initial?.id ? "Edit Doctor" : "New Doctor"}
+        </h2>
       </div>
 
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-slate-700">Email</span>
-        <input
-          type="email"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-        />
-      </label>
+      <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 18 }}>
 
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-slate-700">Phone</span>
-        <input
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        />
-      </label>
+        {/* Error */}
+        {error && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 16px", color: "#dc2626", fontSize: 14, display: "flex", gap: 8 }}>
+            <span>⚠️</span><span>{error}</span>
+          </div>
+        )}
 
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-slate-700">Specialty</span>
-        <input
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          value={form.specialty}
-          onChange={(e) => setForm({ ...form, specialty: e.target.value })}
-        />
-      </label>
+        {/* Name row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Field label="First Name *">
+            <input style={inputSt} value={form.firstName} onChange={f("firstName")} placeholder="e.g. Rajesh" required />
+          </Field>
+          <Field label="Last Name *">
+            <input style={inputSt} value={form.lastName} onChange={f("lastName")} placeholder="e.g. Kumar" required />
+          </Field>
+        </div>
 
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-slate-700">License number</span>
-        <input
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          value={form.licenseNumber}
-          onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })}
-          required
-        />
-      </label>
+        {/* Email + Phone */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Field label="Email *">
+            <input style={inputSt} type="email" value={form.email} onChange={f("email")} placeholder="doctor@hospital.com" required />
+          </Field>
+          <Field label="Phone">
+            <input style={inputSt} value={form.phone} onChange={f("phone")} placeholder="+91 98765 43210" />
+          </Field>
+        </div>
 
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-slate-700">Department ID</span>
-        <input
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          value={form.departmentId}
-          onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
-        />
-      </label>
+        {/* Specialty */}
+        <Field label="Specialty *">
+          <select style={inputSt} value={form.specialty} onChange={f("specialty")} required>
+            <option value="">— Select specialty —</option>
+            {SPECIALTIES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </Field>
 
-      <div>
-        <button
-          type="submit"
-          className="rounded-full bg-slate-950 px-6 py-3 font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-800"
-          disabled={loading}
+        {/* License Number */}
+        <Field label="License Number *">
+          <input style={inputSt} value={form.licenseNumber} onChange={f("licenseNumber")} placeholder="e.g. MCI-2024-001234" required />
+        </Field>
+
+        {/* Department ID */}
+        <Field
+          label="Department ID *"
+          hint="Enter the numeric ID of an existing Department. E.g. if you created \"Cardiology\" and it has ID 1, enter 1."
         >
-          {loading ? "Saving..." : "Save"}
-        </button>
+          <input
+            style={inputSt}
+            type="number"
+            min="1"
+            value={form.departmentId}
+            onChange={f("departmentId")}
+            placeholder="e.g. 1"
+            required
+          />
+        </Field>
+
+        {/* Tip box */}
+        <div
+          style={{
+            background: "#eff6ff",
+            border: "1px solid #bfdbfe",
+            borderRadius: 10,
+            padding: "12px 16px",
+            fontSize: 13,
+            color: "#1d4ed8",
+            lineHeight: 1.6,
+          }}
+        >
+          <strong>💡 Tip:</strong> You must create a <strong>Department</strong> first (via MySQL or the Departments page) before adding a doctor.
+          Run <code style={{ background: "#dbeafe", borderRadius: 4, padding: "1px 6px" }}>INSERT INTO Department (name) VALUES ('Cardiology');</code> then use that ID here.
+        </div>
+
+        {/* Submit */}
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              borderRadius: 10,
+              background: loading ? "#94a3b8" : "linear-gradient(135deg, #2563eb, #0891b2)",
+              padding: "12px 28px",
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#fff",
+              border: "none",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 2px 10px rgba(37,99,235,0.35)",
+            }}
+          >
+            {loading ? "Saving..." : initial?.id ? "Update Doctor" : "Add Doctor"}
+          </button>
+        </div>
       </div>
     </form>
   );
 }
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+        {label}
+      </label>
+      {children}
+      {hint && <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>{hint}</div>}
+    </div>
+  );
+}
+
+const inputSt: React.CSSProperties = {
+  width: "100%",
+  borderRadius: 10,
+  border: "1px solid #e2e8f0",
+  background: "#f8fafc",
+  padding: "11px 14px",
+  fontSize: 14,
+  color: "#0f172a",
+  outline: "none",
+};
