@@ -71,6 +71,8 @@ export interface LabReport {
   testDate: string;
   notes?: string | null;
   createdAt: string;
+  // Included via API relation
+  patient?: Pick<Patient, "id" | "firstName" | "lastName" | "email"> | null;
 }
 
 export interface Room {
